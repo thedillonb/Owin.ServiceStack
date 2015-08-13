@@ -23,13 +23,9 @@ namespace Owin.ServiceStack
     public class ServiceStackHost : IAppHost, IHasContainer, IServiceStackHandler
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
-        private readonly DateTime startTime;
 
         protected ServiceStackHost()
         {
-            this.startTime = DateTime.UtcNow;
-            Log.Info("Begin Initializing Application...");
-
             EndpointHostConfig.SkipPathValidation = true;
         }
 
@@ -48,27 +44,12 @@ namespace Owin.ServiceStack
         {
             var serviceManager = EndpointHost.Config.ServiceManager;
             if (serviceManager != null)
-            {
                 serviceManager.Init();
-                Configure(EndpointHost.Config.ServiceManager.Container);
-            }
-            else
-            {
-                Configure(null);
-            }
-
             EndpointHost.AfterInit();
-
-            var elapsed = DateTime.UtcNow - this.startTime;
-            Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
-        }
-
-        public void Configure(Container container)
-        {
         }
 
         // Handle the processing of a request in here.
-        public bool Handle(IHttpRequest httpReq, IHttpResponse httpRes)
+        bool IServiceStackHandler.Handle(IHttpRequest httpReq, IHttpResponse httpRes)
         {
             try
             {
@@ -135,20 +116,12 @@ namespace Owin.ServiceStack
 
         protected void SetConfig(EndpointHostConfig config)
         {
-            if (config.ServiceName == null)
-                config.ServiceName = EndpointHost.Config.ServiceName;
-
-            //if (config.ServiceManager == null)
-            //config.ServiceManager = EndpointHost.Config.ServiceManager;
-
+            config.ServiceName = config.ServiceName ?? EndpointHost.Config.ServiceName;
             config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
-
             EndpointHost.Config = config;
-
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
             JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
         }
-
 
         public virtual void Release(object instance)
         {

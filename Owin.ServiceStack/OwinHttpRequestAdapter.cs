@@ -17,18 +17,18 @@ namespace Owin.ServiceStack
     /// <summary>
     /// An implementation of <see cref="IHttpRequest"/> based on the <see cref="IOwinRequest"/>
     /// </summary>
-    class OwinHttpRequest : IHttpRequest
+    class OwinHttpRequestAdapter : IHttpRequest
     {
         private static readonly string physicalFilePath;
         private IOwinRequest _request;
         private MemoryStream bufferedStream;
 
-        static OwinHttpRequest()
+        static OwinHttpRequestAdapter()
         {
             physicalFilePath = "~".MapHostAbsolutePath();
         }
 
-        public OwinHttpRequest(IOwinRequest request)
+        public OwinHttpRequestAdapter(IOwinRequest request)
         {
             _request = request;
         }

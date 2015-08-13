@@ -15,8 +15,8 @@ namespace Owin.ServiceStack
         {
             return builder.Use(async (ctx, next) =>
             {
-                var req = new OwinHttpRequest(ctx.Request);
-                var res = new OwinHttpResponse(ctx.Response);
+                var req = new OwinHttpRequestAdapter(ctx.Request);
+                var res = new OwinHttpResponseAdapter(ctx.Response);
                 var t = new Task<bool>(() => host.Handle(req, res), TaskCreationOptions.LongRunning);
                 t.Start();
 
