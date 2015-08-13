@@ -8,7 +8,7 @@
     <owners>Dillon Buchanan</owners>
     <projectUrl>https://github.com/thedillonb/Owin.ServiceStack</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Host ServiceStack (v3) as OWIN middleware/description>
+    <description>Host ServiceStack (v3) as OWIN middleware</description>
     <releaseNotes>Initial release.</releaseNotes>
     <tags>owin http servicestack</tags>
   </metadata>
