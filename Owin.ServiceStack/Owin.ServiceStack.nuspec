@@ -12,7 +12,4 @@
     <releaseNotes>Initial release.</releaseNotes>
     <tags>owin http servicestack</tags>
   </metadata>
-  <files>
-    <file src="bin\Release\Owin.ServiceStack.dll" target="lib/net45" />
-  </files>
 </package>

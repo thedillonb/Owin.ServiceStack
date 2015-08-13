@@ -75,20 +75,19 @@ namespace Owin.ServiceStack
                 var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
                 var serviceStackHandler = handler as IServiceStackHttpHandler;
 
+                if (serviceStackHandler == null)
+                    throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
+
                 if (handler is NotFoundHttpHandler)
                     return false;
 
-                if (serviceStackHandler != null)
-                {
-                    var restHandler = serviceStackHandler as RestHandler;
-                    if (restHandler != null)
-                        httpReq.OperationName = restHandler.RestPath.RequestType.Name;
-                    serviceStackHandler.ProcessRequest(httpReq, httpRes, httpReq.OperationName ?? string.Empty);
-                    httpRes.Close();
-                    return true;
-                }
+                var restHandler = serviceStackHandler as RestHandler;
+                if (restHandler != null)
+                    httpReq.OperationName = restHandler.RestPath.RequestType.Name;
 
-                throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
+                serviceStackHandler.ProcessRequest(httpReq, httpRes, httpReq.OperationName ?? string.Empty);
+                httpRes.Close();
+                return true;
             }
             catch (Exception ex)
             {
