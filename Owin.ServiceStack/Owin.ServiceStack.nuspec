@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Owin.ServiceStack</id>
+    <version>$version$</version>
+    <title>Owin.ServiceStack</title>
+    <authors>Dillon Buchanan</authors>
+    <owners>Dillon Buchanan</owners>
+    <projectUrl>https://github.com/thedillonb/Owin.ServiceStack</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Host ServiceStack (v3) as OWIN middleware/description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <tags>owin http servicestack</tags>
+  </metadata>
+  <files>
+    <file src="bin\Release\Owin.ServiceStack.dll" target="lib/net45" />
+  </files>
+</package>
