@@ -62,6 +62,10 @@ namespace Owin.ServiceStack
 
         public void SetContentLength(long contentLength) => _response.ContentLength = contentLength;
 
-        public void Write(string text) => _response.Write(Encoding.UTF8.GetBytes(text));
+        public void Write(string text)
+        {
+            var data = Encoding.UTF8.GetBytes(text);
+            _response.Write(data);
+        }
     }
 }

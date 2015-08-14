@@ -43,9 +43,21 @@ namespace Owin.ServiceStack
         public void Init()
         {
             var serviceManager = EndpointHost.Config.ServiceManager;
+
             if (serviceManager != null)
+            {
                 serviceManager.Init();
+                Configure(Container);
+            }
+            else
+                Configure(null);
+
             EndpointHost.AfterInit();
+        }
+
+        protected virtual void Configure(Container container)
+        {
+
         }
 
         // Handle the processing of a request in here.
@@ -53,22 +65,7 @@ namespace Owin.ServiceStack
         {
             try
             {
-                var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
-                var serviceStackHandler = handler as IServiceStackHttpHandler;
-
-                if (serviceStackHandler == null)
-                    throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
-
-                if (handler is NotFoundHttpHandler)
-                    return false;
-
-                var restHandler = serviceStackHandler as RestHandler;
-                if (restHandler != null)
-                    httpReq.OperationName = restHandler.RestPath.RequestType.Name;
-
-                serviceStackHandler.ProcessRequest(httpReq, httpRes, httpReq.OperationName ?? string.Empty);
-                httpRes.Close();
-                return true;
+                return ProcessRequest(httpReq, httpRes);
             }
             catch (Exception ex)
             {
@@ -114,10 +111,32 @@ namespace Owin.ServiceStack
             }
         }
 
+        protected virtual bool ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes)
+        {
+            var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
+            var serviceStackHandler = handler as IServiceStackHttpHandler;
+
+            if (serviceStackHandler == null)
+                throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
+
+            if (handler is NotFoundHttpHandler)
+                return false;
+
+            var restHandler = serviceStackHandler as RestHandler;
+            if (restHandler != null)
+                httpReq.OperationName = restHandler.RestPath.RequestType.Name;
+
+            serviceStackHandler.ProcessRequest(httpReq, httpRes, httpReq.OperationName ?? string.Empty);
+            httpRes.Close();
+            return true;
+        }
+
         protected void SetConfig(EndpointHostConfig config)
         {
+            if (config.ServiceManager != null)
+                config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
+
             config.ServiceName = config.ServiceName ?? EndpointHost.Config.ServiceName;
-            config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
             EndpointHost.Config = config;
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
             JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;

@@ -19,25 +19,19 @@ namespace Owin.ServiceStack
     /// </summary>
     class OwinHttpRequestAdapter : IHttpRequest
     {
-        private static readonly string physicalFilePath;
+        private static readonly string[] FormContentTypes = new[] { "application/x-www-form-urlencoded" };
+        private static readonly string physicalFilePath = "~".MapHostAbsolutePath();
         private IOwinRequest _request;
         private MemoryStream bufferedStream;
-
-        static OwinHttpRequestAdapter()
-        {
-            physicalFilePath = "~".MapHostAbsolutePath();
-        }
 
         public OwinHttpRequestAdapter(IOwinRequest request)
         {
             _request = request;
         }
 
-        public IFile[] Files { get; set; }
+        public string AbsoluteUri => _request.Uri.AbsoluteUri.TrimEnd('/');
 
-        public string AbsoluteUri => _request.Uri.AbsoluteUri;
-
-        public string[] AcceptTypes => _request.Accept.Split(';');
+        public string[] AcceptTypes => _request.Accept.Split(',');
 
         public string ApplicationFilePath => physicalFilePath;
 
@@ -50,6 +44,68 @@ namespace Owin.ServiceStack
         public IDictionary<string, Cookie> Cookies => _request.Cookies.ToDictionary(x => x.Key, x => new Cookie(x.Key, x.Value));
 
         public bool IsLocal => true;
+
+        public string OperationName { get; set; }
+
+        public object OriginalRequest => _request;
+
+        public string RawUrl => _request.Uri.AbsolutePath;
+
+        public string RemoteIp => _request.RemoteIpAddress;
+
+        public Stream InputStream => bufferedStream ?? _request.Body;
+
+        public string UserAgent => _request.Headers.ContainsKey("user-agent") ? _request.Headers["user-agent"] : null;
+
+        public string UserHostAddress => _request.RemoteIpAddress;
+
+        public string XForwardedFor => _request.Headers.ContainsKey(HttpHeaders.XForwardedFor) ? _request.Headers[HttpHeaders.XForwardedFor] : null;
+
+        public string XRealIp => _request.Headers.ContainsKey(HttpHeaders.XRealIp) ? _request.Headers[HttpHeaders.XRealIp] : null;
+
+        public T TryResolve<T>() => EndpointHost.AppHost.TryResolve<T>();
+
+        private string pathInfo;
+        public string PathInfo
+        {
+            get
+            {
+                if (this.pathInfo == null)
+                {
+                    var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+
+                    var pos = RawUrl.IndexOf("?");
+                    if (pos != -1)
+                    {
+                        var path = RawUrl.Substring(0, pos);
+                        this.pathInfo = global::ServiceStack.WebHost.Endpoints.Extensions.HttpRequestExtensions.GetPathInfo(
+                            path,
+                            mode,
+                            mode ?? "");
+                    }
+                    else
+                    {
+                        this.pathInfo = RawUrl;
+                    }
+
+                    this.pathInfo = this.pathInfo.UrlDecode();
+                    this.pathInfo = NormalizePathInfo(pathInfo, mode);
+                }
+                return this.pathInfo;
+            }
+        }
+
+        private IFile[] _files;
+        public IFile[] Files
+        {
+            get
+            {
+                if (_files == null)
+                    _files = new IFile[0];
+                return _files;
+            }
+
+        }
 
         public long ContentLength
         {
@@ -67,6 +123,10 @@ namespace Owin.ServiceStack
         {
             get
             {
+                var contentType = ContentType?.Split(new[] { ";" }, 2, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? ContentType;
+                if (!FormContentTypes.Any(x => string.Equals(contentType, x, StringComparison.OrdinalIgnoreCase)))
+                    return null;
+
                 if (_formData == null)
                 {
                     var form = _request.ReadFormAsync().Result;
@@ -108,16 +168,6 @@ namespace Owin.ServiceStack
             }
         }
 
-        public string OperationName { get; set; }
-
-        public object OriginalRequest => _request;
-
-        public string PathInfo => _request.Path.ToString();
-
-        public string RawUrl => _request.Uri.AbsoluteUri;
-
-        public string RemoteIp => _request.RemoteIpAddress;
-
         private NameValueCollection _queryString;
         public NameValueCollection QueryString
         {
@@ -144,10 +194,7 @@ namespace Owin.ServiceStack
 
         public Uri UrlReferrer
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { return null; }
         }
 
         public bool UseBufferedStream
@@ -161,18 +208,6 @@ namespace Owin.ServiceStack
             }
         }
 
-        public Stream InputStream => bufferedStream ?? _request.Body;
-
-        public string UserAgent => _request.Headers.ContainsKey("user-agent") ? _request.Headers["user-agent"] : null;
-
-        public string UserHostAddress => _request.RemoteIpAddress;
-
-        public string XForwardedFor => _request.Headers.ContainsKey(HttpHeaders.XForwardedFor) ? _request.Headers[HttpHeaders.XForwardedFor] : null;
-
-        public string XRealIp => _request.Headers.ContainsKey(HttpHeaders.XRealIp) ? _request.Headers[HttpHeaders.XRealIp] : null;
-
-        public T TryResolve<T>() => EndpointHost.AppHost.TryResolve<T>();
-
         public string GetRawBody()
         {
             if (bufferedStream != null)
@@ -182,5 +217,15 @@ namespace Owin.ServiceStack
                 return reader.ReadToEnd();
         }
 
+        private static string NormalizePathInfo(string pathInfo, string handlerPath)
+        {
+            if (handlerPath != null && pathInfo.TrimStart('/').StartsWith(
+                handlerPath, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return pathInfo.TrimStart('/').Substring(handlerPath.Length);
+            }
+
+            return pathInfo;
+        }
     }
 }
