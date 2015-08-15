@@ -24,13 +24,16 @@ namespace Owin.ServiceStack.Example
     }
 
     [Route("/hello")]
-    public class Hello { }
+    public class Hello
+    {
+        public string Name { get; set; }
+    }
 
     public class HelloService : IService
     {
-        public object Any(Hello hello)
+        public object Post(Hello hello)
         {
-            return "Hello from ServiceStack!";
+            return $"Hello, {hello.Name}!";
         }
 
     }
