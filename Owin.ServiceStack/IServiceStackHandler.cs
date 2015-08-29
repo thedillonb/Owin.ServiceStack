@@ -5,8 +5,13 @@ namespace Owin.ServiceStack
     /// <summary>
     /// Describes a handler interface for ServiceStack requests
     /// </summary>
-    public interface IServiceStackHandler
+    public interface IServiceStackHost
     {
+        /// <summary>
+        /// Initialize the IoC container
+        /// </summary>
+        void Init();
+
         /// <summary>
         /// Handle a request
         /// </summary>

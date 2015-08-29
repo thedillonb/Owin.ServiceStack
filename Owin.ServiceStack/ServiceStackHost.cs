@@ -20,7 +20,7 @@ namespace Owin.ServiceStack
     /// <summary>
     /// A <see cref="IAppHost"/> specifically for the Owin Pipeline
     /// </summary>
-    public class ServiceStackHost : IAppHost, IHasContainer, IServiceStackHandler
+    public class ServiceStackHost : IAppHost, IHasContainer, IServiceStackHost
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceStackHost));
 
@@ -40,7 +40,10 @@ namespace Owin.ServiceStack
             return new ServiceManager(assembliesWithServices);
         }
 
-        public void Init()
+        /// <summary>
+        /// Initialize the IoC container
+        /// </summary>
+        void IServiceStackHost.Init()
         {
             var serviceManager = EndpointHost.Config.ServiceManager;
 
@@ -57,11 +60,16 @@ namespace Owin.ServiceStack
 
         protected virtual void Configure(Container container)
         {
-
+            // Nothing to do...
         }
 
-        // Handle the processing of a request in here.
-        bool IServiceStackHandler.Handle(IHttpRequest httpReq, IHttpResponse httpRes)
+        /// <summary>
+        /// Handle the processing of a request
+        /// </summary>
+        /// <param name="httpReq">The <see cref="IHttpRequest"/></param>
+        /// <param name="httpRes">The <see cref="IHttpResponse"/></param>
+        /// <returns>True if the request was handled, false if otherwise</returns>
+        bool IServiceStackHost.Handle(IHttpRequest httpReq, IHttpResponse httpRes)
         {
             try
             {
