@@ -110,6 +110,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="default.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Views\Page.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

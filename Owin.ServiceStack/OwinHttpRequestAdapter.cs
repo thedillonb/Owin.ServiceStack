@@ -27,6 +27,7 @@ namespace Owin.ServiceStack
         public OwinHttpRequestAdapter(IOwinRequest request)
         {
             _request = request;
+            OperationName = request.Uri.Segments.LastOrDefault();
         }
 
         public string AbsoluteUri => _request.Uri.AbsoluteUri.TrimEnd('/');
