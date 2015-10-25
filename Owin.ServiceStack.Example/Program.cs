@@ -1,6 +1,9 @@
 ﻿using Microsoft.Owin.Hosting;
 using ServiceStack.ServiceHost;
 using System;
+using Funq;
+using ServiceStack.WebHost.Endpoints;
+using ServiceStack.ServiceInterface;
 
 namespace Owin.ServiceStack.Example
 {
@@ -19,7 +22,29 @@ namespace Owin.ServiceStack.Example
         public void Configuration(IAppBuilder app)
         {
             app.UseErrorPage();
-            app.UseServiceStack("Test", GetType().Assembly);
+            app.UseServiceStack(new Host());
+        }
+    }
+
+    class Host : ServiceStackHost
+    {
+        public Host()
+            :base("Test", typeof(Host).Assembly)
+        {
+        }
+
+        protected override void Configure(Container container)
+        {
+            Plugins.Add(new global::ServiceStack.Razor.RazorFormat());
+
+            var endpointHostConfig = new EndpointHostConfig
+            {
+                CustomHttpHandlers = {
+                    { System.Net.HttpStatusCode.NotFound, new global::ServiceStack.Razor.RazorHandler("/notfound") }
+                }
+            };
+
+            SetConfig(endpointHostConfig);
         }
     }
 
@@ -29,6 +54,11 @@ namespace Owin.ServiceStack.Example
         public string Name { get; set; }
     }
 
+    [Route("/page")]
+    public class Page
+    {
+    }
+
     public class HelloService : IService
     {
         public object Any(Hello hello)
@@ -36,5 +66,10 @@ namespace Owin.ServiceStack.Example
             return $"Hello, {hello.Name}!";
         }
 
+        [DefaultView("Page")]
+        public object Get(Page hello)
+        {
+            return new { Name = "Dillon" };
+        }
     }
 }

@@ -7,6 +7,7 @@ using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -33,6 +34,7 @@ namespace Owin.ServiceStack
             : this()
         {
             EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+            EndpointHost.VirtualPathProvider = new FileSystemVirtualPathProvider(this, AppDomain.CurrentDomain.BaseDirectory);
         }
 
         protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
@@ -141,10 +143,13 @@ namespace Owin.ServiceStack
 
         protected void SetConfig(EndpointHostConfig config)
         {
-            if (config.ServiceManager != null)
-                config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
+            // We'll have to set this via reflection because service stack is a little paranoid
+            if (config.ServiceManager == null)
+                config.GetType().GetProperty("ServiceManager").SetValue(config, EndpointHost.Config.ServiceManager);
 
+            config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
             config.ServiceName = config.ServiceName ?? EndpointHost.Config.ServiceName;
+
             EndpointHost.Config = config;
             JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
             JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;

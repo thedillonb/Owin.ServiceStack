@@ -123,16 +123,18 @@ namespace Owin.ServiceStack
         {
             get
             {
-                var contentType = ContentType?.Split(new[] { ";" }, 2, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? ContentType;
-                if (!FormContentTypes.Any(x => string.Equals(contentType, x, StringComparison.OrdinalIgnoreCase)))
-                    return null;
-
                 if (_formData == null)
                 {
-                    var form = _request.ReadFormAsync().Result;
                     var formData = new NameValueCollection();
-                    foreach (var f in form)
-                        formData.Add(f.Key, string.Join("", f.Value));
+
+                    var contentType = ContentType?.Split(new[] { ";" }, 2, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? ContentType;
+                    if (FormContentTypes.Any(x => string.Equals(contentType, x, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        var form = _request.ReadFormAsync().Result;
+                        foreach (var f in form)
+                            formData.Add(f.Key, string.Join("", f.Value));
+                    }
+
                     _formData = formData;
                 }
 
