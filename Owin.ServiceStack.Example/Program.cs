@@ -31,7 +31,7 @@ namespace Owin.ServiceStack.Example
 
     public class HelloService : IService
     {
-        public object Post(Hello hello)
+        public object Any(Hello hello)
         {
             return $"Hello, {hello.Name}!";
         }

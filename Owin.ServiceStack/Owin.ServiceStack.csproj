@@ -83,7 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppBuilderExtensions.cs" />
-    <Compile Include="IServiceStackHandler.cs" />
+    <Compile Include="IServiceStackHost.cs" />
     <Compile Include="OwinCookiesAdapter.cs" />
     <Compile Include="OwinHttpRequestAdapter.cs" />
     <Compile Include="OwinHttpResponseAdapter.cs" />

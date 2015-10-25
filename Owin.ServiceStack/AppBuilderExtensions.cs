@@ -22,7 +22,7 @@ namespace Owin.ServiceStack
             {
                 var req = new OwinHttpRequestAdapter(ctx.Request);
                 var res = new OwinHttpResponseAdapter(ctx.Response);
-                var t = new Task<bool>(() => host.Handle(req, res), TaskCreationOptions.LongRunning);
+                var t = new Task<bool>(() => host.Handle(req, res), TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness);
                 t.Start();
 
                 if (!(await t))
