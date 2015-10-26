@@ -32,7 +32,7 @@ namespace Owin.ServiceStack
 
         public string AbsoluteUri => _request.Uri.AbsoluteUri.TrimEnd('/');
 
-        public string[] AcceptTypes => _request.Accept.Split(',');
+        public string[] AcceptTypes => (_request.Accept ?? string.Empty).Split(',');
 
         public string ApplicationFilePath => physicalFilePath;
 
@@ -56,13 +56,13 @@ namespace Owin.ServiceStack
 
         public Stream InputStream => bufferedStream ?? _request.Body;
 
-        public string UserAgent => _request.Headers.ContainsKey("user-agent") ? _request.Headers["user-agent"] : null;
+        public string UserAgent => Headers["user-agent"];
 
         public string UserHostAddress => _request.RemoteIpAddress;
 
-        public string XForwardedFor => _request.Headers.ContainsKey(HttpHeaders.XForwardedFor) ? _request.Headers[HttpHeaders.XForwardedFor] : null;
+        public string XForwardedFor => Headers[HttpHeaders.XForwardedFor];
 
-        public string XRealIp => _request.Headers.ContainsKey(HttpHeaders.XRealIp) ? _request.Headers[HttpHeaders.XRealIp] : null;
+        public string XRealIp => Headers[HttpHeaders.XRealIp];
 
         public T TryResolve<T>() => EndpointHost.AppHost.TryResolve<T>();
 
@@ -126,7 +126,7 @@ namespace Owin.ServiceStack
             {
                 if (_formData == null)
                 {
-                    var formData = new NameValueCollection();
+                    var formData = new NameValueCollection(StringComparer.OrdinalIgnoreCase);
 
                     var contentType = ContentType?.Split(new[] { ";" }, 2, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? ContentType;
                     if (FormContentTypes.Any(x => string.Equals(contentType, x, StringComparison.OrdinalIgnoreCase)))
@@ -150,7 +150,7 @@ namespace Owin.ServiceStack
             {
                 if (_headers == null)
                 {
-                    var c = new NameValueCollection();
+                    var c = new NameValueCollection(StringComparer.OrdinalIgnoreCase);
                     foreach (var r in _request.Headers)
                         c.Add(r.Key, string.Join("", r.Value));
                     _headers = c;
@@ -178,7 +178,7 @@ namespace Owin.ServiceStack
             {
                 if (_queryString == null)
                 {
-                    var s = new NameValueCollection();
+                    var s = new NameValueCollection(StringComparer.OrdinalIgnoreCase);
                     foreach (var pair in _request.Query.Where(x => x.Value != null))
                         s.Add(pair.Key, string.Join(",", pair.Value));
                     _queryString = s;
