@@ -12,7 +12,7 @@ Install-Package Owin.ServiceStack
 
 Now, simply add a `UseServiceStack` statement to your `IAppBuilder` with arguments similar to what you'd typicaly pass to your current `IAppHost` implementation.
 
-```
+```c#
 public void Configuration(IAppBuilder app)
 {
   // This creates a IAppHost implementation and passes "Test" as the service name, 
@@ -23,7 +23,7 @@ public void Configuration(IAppBuilder app)
 
 However, if you are currently inheriting a `IAppHost` implementation (such as `AppHostHttpListenerLongRunningBase` or `AppHostHttpListenerBase `, you can do the following:
 
-```
+```c#
 // Make sure what ever implementation your AppHost was inheriting before is 
 // modified to inherit from ServiceStackHost. This prevents ServiceStack
 // from trying to use a HttpListener, or similar method, to listen for connections
